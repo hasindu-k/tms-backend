@@ -17,17 +17,47 @@ return [
 
     'paths' => ['api/*'],
 
-    'allowed_methods' => ['*'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
-    'allowed_origins' => [env('APP_FRONTEND_URL', 'http://localhost')],
+    'allowed_origins' => [
+        // Development environments
+        env('APP_FRONTEND_URL', 'http://localhost:5173'),
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:5173',
 
-    'allowed_origins_patterns' => [],
+        // Production environment (replace with your actual domain)
+        env('APP_FRONTEND_PRODUCTION_URL', 'https://yourdomain.com'),
 
-    'allowed_headers' => ['Content-Type', 'Authorization'],
+        // Staging environment (if applicable)
+        env('APP_FRONTEND_STAGING_URL', 'https://staging.yourdomain.com'),
+    ],
 
-    'exposed_headers' => [],
+    'allowed_origins_patterns' => [
+        // Allow subdomains of your main domain
+        '/^https:\/\/.*\.yourdomain\.com$/',
+    ],
 
-    'max_age' => 0,
+    'allowed_headers' => [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'Accept',
+        'Origin',
+        'X-CSRF-TOKEN',
+    ],
+
+    'exposed_headers' => [
+        'Cache-Control',
+        'Content-Language',
+        'Content-Type',
+        'Expires',
+        'Last-Modified',
+        'Pragma',
+    ],
+
+    'max_age' => 86400, // 24 hours
 
     'supports_credentials' => true,
 
