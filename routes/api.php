@@ -12,7 +12,7 @@ use App\Http\Middleware\CheckRole;
 use Illuminate\Support\Facades\Route;
 
 // Authentication Routes
-Route::prefix('auth')->group(function () {
+Route::prefix('auth')->middleware('throttle:5,1')->group(function () {
     Route::get('/google', [GoogleController::class, 'redirectToGoogle']);
     Route::get('/google/callback', [GoogleController::class, 'handleGoogleCallback']);
     Route::post('/login', [AuthController::class, 'login']);
