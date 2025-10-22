@@ -19,8 +19,8 @@ class CommentFactory extends Factory
     public function definition(): array
     {
         return [
-            'task_id' => Task::factory(),
-            'user_id' => User::factory(),
+            'task_id' => 1,
+            'user_id' => 1,
             'comment' => $this->faker->sentence()
         ];
     }
