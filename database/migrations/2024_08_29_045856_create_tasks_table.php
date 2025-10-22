@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->string('title');
             $table->text('description');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
-            $table->string('status');
+            $table->enum('status', ['todo', 'in-progress', 'completed'])->default('todo');
             $table->string('priority');
             $table->timestamps();
         });
