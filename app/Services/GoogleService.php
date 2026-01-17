@@ -6,7 +6,6 @@ use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
@@ -18,49 +17,53 @@ class GoogleService
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
 
-            // Check if user exists
-            $user = User::where('google_id', $googleUser->id)->first();
+            $user = User::where('email', $googleUser->email)->first();
 
-            if ($user) {
-                $avatarUrl = $googleUser->avatar;
-
-                // If avatar doesn't exist in Google profile, generate initials
-                if (!$avatarUrl) {
-                    $user->avatar = null; // No avatar available, will use fallback
-                } elseif (!$user->avatar || !Storage::disk('public')->exists($user->avatar)) {
-                    $avatarContents = file_get_contents($avatarUrl);
-                    $avatarPath = 'avatars/' . uniqid() . '.jpg';
-                    Storage::disk('public')->put($avatarPath, $avatarContents);
-
-                    $user->avatar = $avatarPath;
-                }
-
-                $user->save();
-                $token = JWTAuth::fromUser($user);
-            } else {
-                // Creating a new user if they don't exist
+            if (!$user) {
                 $user = User::create([
                     'name' => $googleUser->name,
                     'email' => $googleUser->email,
                     'google_id' => $googleUser->id,
-                    'avatar' => $googleUser->avatar, // This might be null
+                    'avatar' => $googleUser->avatar,
                     'email_verified_at' => now(),
                     'password' => Hash::make(Str::random(24)),
                 ]);
-
-                $token = JWTAuth::fromUser($user);
             }
 
-            $frontEndUrl = config('app.frontend_url');
-            $path = $frontEndUrl . '/auth/google/callback?token=' . $token;
-            return redirect()->to($path);
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => 'Unable to authenticate with Google',
-                'message' => $e->getMessage(),
-            ], 500);
+            $needsSave = false;
+
+            if (!$user->avatar && $googleUser->avatar) {
+                $user->avatar = $googleUser->avatar;
+                $needsSave = true;
+            }
+
+            if (!$user->google_id) {
+                $user->google_id = $googleUser->id;
+                $needsSave = true;
+            }
+
+            if ($needsSave) {
+                $user->save();
+            }
+
+            $token = JWTAuth::fromUser($user);
+
+            return redirect()->to(
+                config('app.frontend_url') .
+                    "/auth/google/callback?token={$token}"
+            );
+        } catch (\Throwable $e) {
+            Log::error('Google OAuth failed', [
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()->to(
+                config('app.frontend_url') .
+                    "/auth/google/callback?error=google_auth_failed"
+            );
         }
     }
+
     public function redirectToGoogle()
     {
         return Socialite::driver('google')->stateless()->redirect();
