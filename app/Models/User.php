@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\HasApiTokens;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Spatie\Permission\Traits\HasRoles;
@@ -90,6 +91,7 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail, CanRe
 
     public function sendEmailVerificationNotification()
     {
+        Log::info('Sending custom email verification notification to user ID: ' . $this->id);
         $this->notify(new CustomVerifyEmail);
     }
 

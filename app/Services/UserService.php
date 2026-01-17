@@ -166,15 +166,15 @@ class UserService
 
         return $status === Password::RESET_LINK_SENT
             ? response()
-                ->json(
-                    ['message' => 'Password reset link sent to your email'],
-                    200
-                )
+            ->json(
+                ['message' => 'Password reset link sent to your email'],
+                200
+            )
             : response()
-                ->json(
-                    ['error' => 'Password reset link could not be sent'],
-                    500
-                );
+            ->json(
+                ['error' => 'Password reset link could not be sent'],
+                500
+            );
     }
 
     protected function respondWithToken($token)
@@ -210,6 +210,4 @@ class UserService
             ], 500);
         }
     }
-
-
 }
