@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use Illuminate\Support\Facades\Storage;
@@ -7,6 +8,10 @@ class AvatarService
 {
     public static function getAvatarUrl($user)
     {
+        if (filter_var($user->avatar, FILTER_VALIDATE_URL)) {
+            return self::getAvatarFallback($user);
+        }
+
         if ($user->avatar) {
             return config('app.url') . Storage::url($user->avatar);
         }
